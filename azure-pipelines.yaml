@@ -4,13 +4,17 @@ trigger:
 
 pr:
   - main
-  - release/*
   - develop
 
 pool:
   vmImage: "ubuntu-latest"
 
 steps:
+  - checkout: self
+    fetchDepth: 0
+    fetchTags: true
+    displayName: Check out source code
+
   - task: GetRevision@1
     displayName: "Get Revision"
     inputs:
@@ -24,7 +28,6 @@ steps:
       if [[ "$(Build.SourceBranch)" == "refs/heads/main" ]]; then IMAGE_TAGS="$VERSION_TAG,latest"; fi;
       echo Tags: $IMAGE_TAGS
       echo repo: $(Build.Repository.Name)
-      echo githubToken: $(githubToken)
       echo "##vso[task.setvariable variable=IMAGE_TAGS]$IMAGE_TAGS"
     displayName: Generate image tags
 
