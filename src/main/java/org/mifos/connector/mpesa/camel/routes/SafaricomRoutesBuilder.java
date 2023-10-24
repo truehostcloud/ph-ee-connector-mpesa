@@ -235,10 +235,12 @@ public class SafaricomRoutesBuilder extends RouteBuilder {
                     String server_id = jsonObject.getString("CheckoutRequestID");
                     String resultCode = jsonObject.getString("ResultCode");
                     String resultDescription = jsonObject.getString("ResultDesc");
+                    String receiptNumber = jsonObject.getString(MPESA_RECEIPT_NUMBER);
                     Object correlationId = exchange.getProperty(CORRELATION_ID);
 
                     if(resultCode.equals("0")) {
                         exchange.setProperty(TRANSACTION_FAILED, false);
+                        exchange.setProperty(SERVER_TRANSACTION_RECEIPT_NUMBER, receiptNumber);
                     } else {
                         exchange.setProperty(ERROR_CODE, resultCode);
                         exchange.setProperty(ERROR_INFORMATION, exchange.getIn().getBody(String.class));

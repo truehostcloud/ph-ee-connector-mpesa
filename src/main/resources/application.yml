@@ -38,7 +38,7 @@ mpesa:
   api:
     timeout: 60000
     lipana: /mpesa/stkpush/v1/processrequest
-    transaction-status: /mpesa/stkpushquery/v1/query
+    transaction-status: /mpesa/stkpushquery/v2/query
   local:
     host: http://localhost:5000
     transaction-callback: /buygoods/callback
