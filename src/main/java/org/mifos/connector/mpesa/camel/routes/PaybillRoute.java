@@ -33,6 +33,7 @@ import static org.mifos.connector.mpesa.camel.config.CamelProperties.CONTENT_TYP
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.CUSTOM_HEADER_FILTER_STRATEGY;
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.TENANT_ID;
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.TRANSACTION_ID;
+import static org.mifos.connector.mpesa.zeebe.ZeebeVariables.SERVER_TRANSACTION_RECEIPT_NUMBER;
 import static org.mifos.connector.mpesa.zeebe.ZeebeVariables.TRANSFER_CREATE_FAILED;
 
 @Component
@@ -196,11 +197,11 @@ public class PaybillRoute extends ErrorHandlerRouteBuilder {
                     variables.put(CHANNEL_REQUEST, obj.toString());
                     variables.put("amount", paybillConfirmationRequestDTO.getTransactionAmount());
                     variables.put("accountId", paybillConfirmationRequestDTO.getBillRefNo());
-                    variables.put("originDate", Long.parseLong(paybillConfirmationRequestDTO.getTransactionTime()));
                     variables.put("phoneNumber", paybillConfirmationRequestDTO.getMsisdn());
                     variables.put("mpesaTransactionId", mpesaTransactionId);
                     variables.put(TRANSACTION_ID, transactionId);
                     variables.put(TRANSFER_CREATE_FAILED, false);
+                    variables.put(SERVER_TRANSACTION_RECEIPT_NUMBER, mpesaTransactionId);
                     logger.info("Workflow transaction id : {}", transactionId);
 
                     if (transactionId != null) {
