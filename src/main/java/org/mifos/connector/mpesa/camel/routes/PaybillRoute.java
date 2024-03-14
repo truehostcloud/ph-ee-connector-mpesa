@@ -24,6 +24,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.ACCOUNT_HOLDING_INSTITUTION_ID;
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.AMS_NAME;
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.CHANNEL_REQUEST;
@@ -199,7 +200,7 @@ public class PaybillRoute extends ErrorHandlerRouteBuilder {
                     variables.put("accountId", paybillConfirmationRequestDTO.getBillRefNo());
                     variables.put("phoneNumber", paybillConfirmationRequestDTO.getMsisdn());
                     variables.put("mpesaTransactionId", mpesaTransactionId);
-                    variables.put(TRANSACTION_ID, transactionId);
+                    variables.put(TRANSACTION_ID, mpesaTransactionId);
                     variables.put(TRANSFER_CREATE_FAILED, false);
                     variables.put(SERVER_TRANSACTION_RECEIPT_NUMBER, mpesaTransactionId);
                     logger.info("Workflow transaction id : {}", transactionId);
@@ -215,6 +216,8 @@ public class PaybillRoute extends ErrorHandlerRouteBuilder {
                     } else {
                         logger.debug("No workflow of such transaction ID exists");
                     }
-                });
+                })
+                .setHeader(HTTP_RESPONSE_CODE, constant(202))
+                .setBody(constant(""));
     }
 }
