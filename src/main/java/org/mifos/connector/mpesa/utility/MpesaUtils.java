@@ -22,6 +22,8 @@ import java.util.Objects;
 
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.AMOUNT;
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.CURRENCY;
+import static org.mifos.connector.mpesa.camel.config.CamelProperties.FINERACT_AMS_IDENTIFIER;
+import static org.mifos.connector.mpesa.camel.config.CamelProperties.FINERACT_AMS_NAME;
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.MEMO;
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.TRANSACTION_ID;
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.WALLET_NAME;
@@ -43,9 +45,13 @@ public class MpesaUtils {
     @Value("${roster.host}")
     private String rosterHost;
 
+    @Value("${fineract.host}")
+    private String fineractHost;
+
     enum ams {
         paygops,
-        roster;
+        roster,
+        fineract;
     }
 
     public GsmaTransfer createGsmaTransferDTO(PaybillResponseDTO paybillResponseDTO, String clientCorrelationId) {
@@ -137,6 +143,9 @@ public class MpesaUtils {
         } else if (amsName.equalsIgnoreCase("roster")) {
             partyIdInfoPayee.put("partyIdType", "ACCOUNTID");
             partyIdInfoPayee.put("partyIdentifier", paybillConfirmationRequestDTO.getBillRefNo());
+        } else if (FINERACT_AMS_NAME.equalsIgnoreCase(amsName)) {
+            partyIdInfoPayee.put("partyIdType", FINERACT_AMS_IDENTIFIER);
+            partyIdInfoPayee.put("partyIdentifier", paybillConfirmationRequestDTO.getBillRefNo());
         }
         payee.put("partyIdInfo", partyIdInfoPayee);
 
@@ -153,6 +162,8 @@ public class MpesaUtils {
             return paygopsHost;
         } else if (Objects.equals(amsName, ams.roster.toString())) {
             return rosterHost;
+        } else if (Objects.equals(amsName, ams.fineract.toString())) {
+            return fineractHost;
         }
         return null;
     }
@@ -160,6 +171,7 @@ public class MpesaUtils {
     public static ChannelRequestDTO convertPaybillPayloadToChannelPayload(PaybillRequestDTO paybillRequestDTO, String amsName, String currency) {
         String foundationalId = "";
         String accountID = "";
+        String fineractAccountId = "";
         // Mapping primary and secondary Identifier
         CustomData primaryIdentifier = new CustomData();
         if (amsName.equalsIgnoreCase("paygops")) {
@@ -170,6 +182,10 @@ public class MpesaUtils {
             accountID = paybillRequestDTO.getBillRefNo();
             primaryIdentifier.setKey("accountID");
             primaryIdentifier.setValue(accountID);
+        } else if (FINERACT_AMS_NAME.equalsIgnoreCase(amsName)) {
+            fineractAccountId = paybillRequestDTO.getBillRefNo();
+            primaryIdentifier.setKey(FINERACT_AMS_IDENTIFIER);
+            primaryIdentifier.setValue(fineractAccountId);
         }
         CustomData secondaryIdentifier = new CustomData();
         secondaryIdentifier.setKey("MSISDN");
