@@ -56,8 +56,9 @@ public class TransactionStateWorker {
                     logger.info("Job '{}' started from process '{}' with key {}", job.getType(), job.getBpmnProcessId(), job.getKey());
 
                     Map<String, Object> variables = job.getVariablesAsMap();
+                    String transactionId = (String) variables.get(TRANSACTION_ID);
                     if(skipMpesa){
-                        logger.info("Skipping MPESA");
+                        logger.info("Skipping MPESA for transaction with id {}", transactionId);
                         Exchange exchange = new DefaultExchange(camelContext);
                         String serverTransactionId = exchange.getProperty(SERVER_TRANSACTION_ID, String.class);
                         Integer retryCount = 1 + (Integer) variables.getOrDefault(SERVER_TRANSACTION_STATUS_RETRY_COUNT, 0);
@@ -78,7 +79,7 @@ public class TransactionStateWorker {
                     else {
                         Integer retryCount = 1 + (Integer) variables.getOrDefault(SERVER_TRANSACTION_STATUS_RETRY_COUNT, 0);
                         variables.put(SERVER_TRANSACTION_STATUS_RETRY_COUNT, retryCount);
-                        logger.info("Trying count: " + retryCount);
+                        logger.info("Status enquiry for transaction {}. Attempt {}", transactionId, retryCount);
                         TransactionChannelC2BRequestDTO channelRequest = objectMapper.readValue(
                                 (String) variables.get("mpesaChannelRequest"), TransactionChannelC2BRequestDTO.class);
                         BuyGoodsPaymentRequestDTO buyGoodsPaymentRequestDTO = safaricomUtils.channelRequestConvertor(
