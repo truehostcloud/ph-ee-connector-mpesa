@@ -31,6 +31,7 @@ import static org.mifos.connector.mpesa.camel.config.CamelProperties.CHANNEL_REQ
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.CLIENT_CORRELATION_ID;
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.CONTENT_TYPE;
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.CONTENT_TYPE_VAL;
+import static org.mifos.connector.mpesa.camel.config.CamelProperties.CORRELATION_ID;
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.CUSTOM_HEADER_FILTER_STRATEGY;
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.TENANT_ID;
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.TRANSACTION_ID;
@@ -62,7 +63,7 @@ public class PaybillRoute extends ErrorHandlerRouteBuilder {
                 .log(LoggingLevel.INFO, "## Paybill validation request")
                 .to("direct:account-status")
                 .unmarshal().json(JsonLibrary.Jackson, PaybillResponseDTO.class)
-                .log("${body.isReconciled}")
+                .log("Paybill validation response for transaction ID ${exchangeProperty.transactionId}: ${body}")
                 .choice()
                     .when().simple("${body.isReconciled} == 'true'")
                         .to("direct:start-paybill-workflow")
@@ -106,7 +107,8 @@ public class PaybillRoute extends ErrorHandlerRouteBuilder {
         from("direct:account-status")
                 .id("account-status-channel")
                 .unmarshal().json(JsonLibrary.Jackson, PaybillRequestDTO.class)
-                .log(LoggingLevel.INFO, "Paybill Validation Payload")
+                .log(LoggingLevel.INFO, "Paybill Validation request received with transaction ID ${body.transactionID}, body: ${body} ")
+                .setProperty(TRANSACTION_ID, simple("${body.transactionID}"))
                 .setBody(exchange -> {
                     PaybillRequestDTO paybillRequestDTO = exchange.getIn().getBody(PaybillRequestDTO.class);
                     //Getting the ams name
@@ -172,7 +174,7 @@ public class PaybillRoute extends ErrorHandlerRouteBuilder {
         from("rest:POST:/confirmation")
                 .id("mpesa-confirmation")
                 .unmarshal().json(JsonLibrary.Jackson, PaybillRequestDTO.class)
-                .log(LoggingLevel.INFO, "Setting zeebe variable for confirmation")
+                .log(LoggingLevel.INFO, "Confirmation request received with transaction ID ${body.transactionID}, body: ${body} ")
                 .process(e -> {
                     PaybillRequestDTO paybillConfirmationRequestDTO = e.getIn().getBody(PaybillRequestDTO.class);
                     e.setProperty("mpesaTransactionId", paybillConfirmationRequestDTO.getTransactionID());
@@ -203,7 +205,8 @@ public class PaybillRoute extends ErrorHandlerRouteBuilder {
                     variables.put(TRANSACTION_ID, mpesaTransactionId);
                     variables.put(TRANSFER_CREATE_FAILED, false);
                     variables.put(SERVER_TRANSACTION_RECEIPT_NUMBER, mpesaTransactionId);
-                    logger.info("Workflow transaction id : {}", transactionId);
+                    variables.put(CORRELATION_ID, transactionId);
+                    logger.info("Workflow transaction id: {} for mpesa transaction id: {}", transactionId, mpesaTransactionId);
 
                     if (transactionId != null) {
                         zeebeClient.newPublishMessageCommand()

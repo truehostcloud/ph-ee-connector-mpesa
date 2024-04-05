@@ -43,4 +43,5 @@ public class CamelProperties {
     public static final String MPESA_RECEIPT_NUMBER = "MpesaReceiptNumber";
     public static final String FINERACT_AMS_NAME = "fineract";
     public static final String FINERACT_AMS_IDENTIFIER = "FINERACTACCOUNTID";
+    public static final String CALLBACK_DATETIME = "callbackDateTime";
 }

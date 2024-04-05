@@ -3,6 +3,7 @@
 ## Version 1.2.0
 
         * [SER-2233] - Add support for fineract paybill transactions
+        * [SER-2304] - Add extra transaction logs
 
 ## Version 1.1.1
 
