@@ -28,6 +28,7 @@ import static org.mifos.connector.mpesa.camel.config.CamelProperties.ERROR_DESCR
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.ERROR_INFORMATION;
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.MPESA_API_RESPONSE;
 import static org.mifos.connector.mpesa.camel.routes.PaybillRoute.workflowInstanceStore;
+import static org.mifos.connector.mpesa.zeebe.ZeebeVariables.PARTY_LOOKUP_FSP_ID;
 import static org.mifos.connector.mpesa.zeebe.ZeebeVariables.SERVER_TRANSACTION_ID;
 import static org.mifos.connector.mpesa.zeebe.ZeebeVariables.TRANSACTION_FAILED;
 import static org.mifos.connector.mpesa.zeebe.ZeebeVariables.TRANSACTION_ID;
@@ -106,6 +107,7 @@ public class MpesaWorker {
 
                         producerTemplate.send("direct:buy-goods-base", exchange);
                         variables.put(MPESA_API_RESPONSE, exchange.getProperty(MPESA_API_RESPONSE));
+                        variables.put(PARTY_LOOKUP_FSP_ID, exchange.getProperty(PARTY_LOOKUP_FSP_ID));
 
                         boolean isTransactionFailed = exchange.getProperty(TRANSACTION_FAILED, boolean.class);
                         if (isTransactionFailed) {

@@ -336,6 +336,7 @@ public class SafaricomRoutesBuilder extends RouteBuilder {
                     mpesaProps = mpesaUtils.setMpesaProperties();
                     logger.info("MPESA properties for transaction with id {}: AMS - {}, Shortcode - {}, TILL - {}",
                         exchange.getProperty(CORRELATION_ID), mpesaProps.getName(), mpesaProps.getBusinessShortCode(), mpesaProps.getTill());
+                    exchange.setProperty(PARTY_LOOKUP_FSP_ID, mpesaProps.getTill());
                     BuyGoodsPaymentRequestDTO buyGoodsPaymentRequestDTO =
                             (BuyGoodsPaymentRequestDTO) exchange.getProperty(BUY_GOODS_REQUEST_BODY);
 

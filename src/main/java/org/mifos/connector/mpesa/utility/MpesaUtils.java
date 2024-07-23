@@ -27,6 +27,7 @@ import static org.mifos.connector.mpesa.camel.config.CamelProperties.FINERACT_AM
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.MEMO;
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.TRANSACTION_ID;
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.WALLET_NAME;
+import static org.mifos.connector.mpesa.zeebe.ZeebeVariables.INITIATOR_FSP_ID;
 
 
 @Component
@@ -54,10 +55,10 @@ public class MpesaUtils {
         fineract;
     }
 
-    public GsmaTransfer createGsmaTransferDTO(PaybillResponseDTO paybillResponseDTO, String clientCorrelationId) {
+    public GsmaTransfer createGsmaTransferDTO(PaybillResponseDTO paybillResponseDTO, String clientCorrelationId, String businessShortCode) {
         GsmaTransfer gsmaTransfer = new GsmaTransfer();
 
-        List<CustomData> customData = setCustomData(paybillResponseDTO,clientCorrelationId);
+        List<CustomData> customData = setCustomData(paybillResponseDTO, clientCorrelationId, businessShortCode);
         String currentDateTime = getCurrentDateTime();
 
         Party payer = new Party();
@@ -86,7 +87,7 @@ public class MpesaUtils {
         return gsmaTransfer;
     }
 
-    private List<CustomData> setCustomData(PaybillResponseDTO paybillResponseDTO, String clientCorrelationId) {
+    private List<CustomData> setCustomData(PaybillResponseDTO paybillResponseDTO, String clientCorrelationId, String businessShortCode) {
         CustomData reconciled = new CustomData();
         reconciled.setKey("partyLookupFailed");
         reconciled.setValue(!paybillResponseDTO.isReconciled());
@@ -108,6 +109,9 @@ public class MpesaUtils {
         CustomData currency = new CustomData();
         currency.setKey("currency");
         currency.setValue(paybillResponseDTO.getCurrency());
+        CustomData initiatorFspId = new CustomData();
+        initiatorFspId.setKey(INITIATOR_FSP_ID);
+        initiatorFspId.setValue(businessShortCode);
 
         List<CustomData> customData = new ArrayList<>();
         customData.add(reconciled);
@@ -117,6 +121,7 @@ public class MpesaUtils {
         customData.add(tenantId);
         customData.add(clientCorrelation);
         customData.add(currency);
+        customData.add(initiatorFspId);
         return customData;
     }
 

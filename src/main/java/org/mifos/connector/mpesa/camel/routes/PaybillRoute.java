@@ -35,6 +35,7 @@ import static org.mifos.connector.mpesa.camel.config.CamelProperties.CORRELATION
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.CUSTOM_HEADER_FILTER_STRATEGY;
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.TENANT_ID;
 import static org.mifos.connector.mpesa.camel.config.CamelProperties.TRANSACTION_ID;
+import static org.mifos.connector.mpesa.zeebe.ZeebeVariables.INITIATOR_FSP_ID;
 import static org.mifos.connector.mpesa.zeebe.ZeebeVariables.SERVER_TRANSACTION_RECEIPT_NUMBER;
 import static org.mifos.connector.mpesa.zeebe.ZeebeVariables.TRANSFER_CREATE_FAILED;
 
@@ -85,7 +86,8 @@ public class PaybillRoute extends ErrorHandlerRouteBuilder {
                     String mpesaTxnId = paybillResponseDTO.getTransactionId();
                     String clientCorrelationId = mpesaTxnId;
                     reconciledStore.put(clientCorrelationId, reconciled);
-                    GsmaTransfer gsmaTransfer = mpesaUtils.createGsmaTransferDTO(paybillResponseDTO,clientCorrelationId);
+                    String businessShortCode = e.getProperty(INITIATOR_FSP_ID, String.class);
+                    GsmaTransfer gsmaTransfer = mpesaUtils.createGsmaTransferDTO(paybillResponseDTO, clientCorrelationId, businessShortCode);
                     e.getIn().removeHeaders("*");
                     e.getIn().setHeader(ACCOUNT_HOLDING_INSTITUTION_ID, paybillResponseDTO.getAccountHoldingInstitutionId());
                     e.getIn().setHeader(AMS_NAME, paybillResponseDTO.getAmsName());
@@ -125,6 +127,7 @@ public class PaybillRoute extends ErrorHandlerRouteBuilder {
                     exchange.setProperty("channelUrl", channelUrl);
                     exchange.setProperty("secondaryIdentifier", secondaryIdentifierName);
                     exchange.setProperty("secondaryIdentifierValue", paybillRequestDTO.getMsisdn());
+                    exchange.setProperty(INITIATOR_FSP_ID, businessShortCode);
                     ChannelRequestDTO obj = MpesaUtils.convertPaybillPayloadToChannelPayload(paybillRequestDTO, amsName, currency);
                     logger.debug("Header:{}", exchange.getIn().getHeaders());
                     try {

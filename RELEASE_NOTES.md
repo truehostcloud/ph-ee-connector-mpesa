@@ -1,5 +1,9 @@
 # Release Notes
 
+## Version 1.3.0
+
+        * [SER-2908] - Add paybill shortcode and till number to zeebe variables
+
 ## Version 1.2.0
 
         * [SER-2233] - Add support for fineract paybill transactions
